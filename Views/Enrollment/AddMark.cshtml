@@ -1,0 +1,75 @@
+@model List<StudentRegisteration.ViewModels.MarkCreateViewModel>
+
+@{
+    var academicYearOrder = new Dictionary<string, int>
+    {
+        { "1st Year", 1 },
+        { "2nd Year", 2 },
+        { "3rd Year", 3 },
+        // Add more years if needed
+    };
+
+    var sortedModel = Model.OrderBy(ec => academicYearOrder.ContainsKey(ec.AcademicYear) ? academicYearOrder[ec.AcademicYear] : int.MaxValue).ToList();
+}
+
+<h1 class="mt-4 mb-4">Enrollment Index</h1>
+
+<a asp-action="Dashboard" asp-controller="Student" class="btn btn-primary mb-4" asp-route-id="@Model.FirstOrDefault()?.StudentDetailsId">Dashboard</a>
+
+@if (sortedModel.Count > 0)
+{
+    <div class="row">
+        @foreach (var item in sortedModel.GroupBy(ec => new { ec.EnrollmentId, ec.AcademicYear, ec.Semester }))
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <div class="fw-bold fs-2">
+                            @item.FirstOrDefault().StudentName
+                        </div>
+                        Enrollment ID: @item.Key.EnrollmentId
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Academic Year: @item.Key.AcademicYear</h5>
+                        <h5 class="card-title">Semester: @item.Key.Semester</h5>
+                        <h5 class="card-title">Roll Number: @item.FirstOrDefault().RollNumber</h5>
+                        @foreach (var courseGroup in item.GroupBy(ec => ec.CourseName))
+                        {
+                            <h5 class="card-title">Course Name: @courseGroup.Key</h5>
+                            <ul class="list-unstyled">
+                                @foreach (var course in courseGroup)
+                                {
+                                    <li>Mark Value: @course.MarkValue</li>
+                                    <li>Is Passed: @(course.MarkValue >= 45 ? "Yes" : "No")</li>
+                                    <li>
+                                        <form asp-action="AddMark" method="post">
+                                            <input type="hidden" name="enrollmentId" value="@course.EnrollmentId" />
+                                            <input type="hidden" name="courseId" value="@course.CourseId" />
+                                            <div class="form-group">
+                                                <label for="markValue">Mark Value:</label>
+                                                <input type="number" id="markValue" name="markValue" class="form-control" placeholder="Enter Mark Value" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="isPassed">Is Passed:</label>
+                                                <select id="isPassed" name="isPassed" class="form-control">
+                                                    <option value="true">Yes</option>
+                                                    <option value="false">No</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </form>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                       
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No enrollments found.</p>
+}

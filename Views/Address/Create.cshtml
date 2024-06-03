@@ -1,0 +1,34 @@
+@model StudentRegisteration.Models.Address
+
+<h1>Create New Address</h1>
+
+<form method="post" asp-action="Create">
+
+    <div class="form-group">
+        <label for="State">State:</label>
+        <input type="text" class="form-control" id="State" name="State" required>
+        @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="City">City:</label>
+        <input type="text" class="form-control" id="City" name="City" required>
+        @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="Town">Town:</label>
+        <input type="text" class="form-control" id="Town" name="Town" required>
+        @Html.ValidationMessageFor(model => model.Town, "", new { @class = "text-danger" })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+
+</form>
+
+
+@section Scripts { 
+    
+    <script src="~/lib/jquery-validate/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

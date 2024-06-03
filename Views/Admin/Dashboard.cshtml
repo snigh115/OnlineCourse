@@ -1,0 +1,13 @@
+@model StudentRegisteration.ViewModels.AdminViewModel
+
+<p>@Model.UserName</p>
+
+<h2>DashBoard</h2>
+<a asp-action="Logout" asp-controller="User">Logout</a>
+
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="Address">Address List </a>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="CoursesManagement">Courses List </a>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="StudentManagement">Student List </a>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="StudentCount">Student Count </a>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="MonthlyPaymentSheet">MonthlyPaymentSheet</a>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="MarkList">MarkList</a>

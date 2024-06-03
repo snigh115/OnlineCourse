@@ -1,0 +1,164 @@
+@model StudentRegisteration.ViewModels.AddressViewModel
+
+<h1>Addresses List</h1>
+
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard </a>
+
+
+<a class="btn btn-primary" asp-action="Index">View All Addresses</a>
+<a class="btn btn-success" asp-action="Create">Create new Address</a>
+
+
+
+<form method="post" asp-action="Index" class="my-4" id="filterForm">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="state" class="form-label">State:</label>
+            <select id="state" name="State" class="form-select" onchange="submitForm()">
+                <option value="">-- Select State --</option>
+                @foreach (var state in Model.States)
+                {
+                    if (Model.State == state)
+                    {
+                        <option value="@state" selected="@((Model.State == state).ToString().ToLower())">@state</option>
+                    }
+                }
+                @foreach (var state in Model.States)
+                {
+                    if (Model.State != state)
+                    {
+                        <option value="@state">@state</option>
+                    }
+                }
+                @* @foreach (var state in Model.States)
+                {
+                    <option value="@state" selected="@((Model.State == state).ToString().ToLower())">@state</option>
+                } *@
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="city" class="form-label">City:</label>
+            <select id="city" name="City" class="form-select" onchange="submitForm()">
+                <option value="">-- Select City --</option>
+                @foreach (var city in Model.Cities)
+                {
+                    if (Model.City == city)
+                    {
+                        <option value="@city" selected="@((Model.City == city).ToString().ToLower())">@city</option>
+                    }
+                }
+                @foreach (var city in Model.Cities)
+                {
+                    if (Model.City != city)
+                    {
+                        <option value="@city">@city</option>
+                    }
+                }
+              
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="town" class="form-label">Town:</label>
+            <select id="town" name="Town" class="form-select" onchange="submitForm()">
+                <option value="">-- Select Town --</option>
+                @foreach (var town in Model.Towns)
+                {
+                    if (Model.Town == town)
+                    {
+                        <option value="@town" selected="@((Model.Town == town).ToString().ToLower())">@town</option>
+                    }
+                }
+                @foreach (var town in Model.Towns)
+                {
+                    if (Model.Town != town)
+                    {
+                        <option value="@town">@town</option>
+                    }
+                }
+                
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Filter</button>
+</form>
+
+
+
+<div class="pagination">
+    @if (Model.TotalCount > 0)
+    {
+        <a class="btn btn-primary me-1 @(Model.Page == 1 ? "disabled" : "")" href="@Url.Action("Index", new { state = Model.State, city = Model.City, town = Model.Town, page = 1 })">First</a>
+        <a class="btn btn-primary me-2 @(Model.Page == 1 ? "disabled" : "")" href="@Url.Action("Index", new { state = Model.State, city = Model.City, town = Model.Town, page = Model.Page - 1 })">Previous</a>
+        
+        @if (Model.Page > 3)
+        {
+            <a class="btn btn-outline-success" href="#">...</a>
+        }
+        
+        @for (int i = Math.Max(Model.Page - 1, 1); i <= Math.Min(Model.Page + 1, Math.Ceiling((double)Model.TotalCount / 10)); i++)
+        {
+            <a class="btn btn-outline-success @(i == Model.Page ? "active" : "")" href="@Url.Action("Index", new { state = Model.State, city = Model.City, town = Model.Town, page = i })">@i</a>
+        }
+
+        @if (Model.Page < Math.Ceiling((double)Model.TotalCount / 10) - 2)
+        {
+            <a class="btn btn-outline-success me-2" href="#">...</a>
+        }
+        
+        <a class="btn btn-success me-1  @(Model.Page == Math.Ceiling((double)Model.TotalCount / 10) ? "disabled" : "")" href="@Url.Action("Index", new { state = Model.State, city = Model.City, town = Model.Town, page = Model.Page + 1 })">Next</a>
+        <a class="btn btn-success me-1 @(Model.Page == Math.Ceiling((double)Model.TotalCount / 10) ? "disabled" : "")" href="@Url.Action("Index", new { state = Model.State, city = Model.City, town = Model.Town, page = (int)Math.Ceiling((double)Model.TotalCount / 10) })">Last</a>
+    }
+    else
+    {
+        <a class="btn btn-success me-1 " href="#">First</a>
+        <a class="btn btn-success me-2 " href="#">Previous</a>
+        <a class="btn btn-success me-1 ms-2 " href="#">Next</a>
+        <a class="btn btn-success " href="#">Last</a>
+    }
+</div>
+
+
+@if (Model.Addresses.Any())
+{
+    
+    <h2>Addresses</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>State</th>
+                <th>City</th>
+                <th>Town</th>
+                <th>Action</th>
+                <!-- Add more columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var address in Model.Addresses)
+            {
+                <tr>
+                    <td>@address.State</td>
+                    <td>@address.City</td>
+                    <td>@address.Town</td>
+                    <td>
+                        <a class="btn btn-info text-white" asp-action="Edit" asp-route-id="@address.Id">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@address.Id" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-outline-danger">Delete</button>
+                        </form>                    
+                    </td>
+                    <!-- Add more columns as needed -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No addresses found.</p>
+}
+
+
+<script>
+    function submitForm() {
+        document.getElementById("filterForm").submit();
+    }
+</script>

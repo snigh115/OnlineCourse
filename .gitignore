@@ -1,0 +1,10 @@
+# Visual Studio
+.vscode/
+.vscode/*
+
+Migrations
+obj
+bin
+Debug
+
+wwwroot/StudentImages/*

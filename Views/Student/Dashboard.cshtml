@@ -1,0 +1,11 @@
+@model StudentRegisteration.ViewModels.StudentDetailsViewModel
+
+<h1>Dashboard</h1>
+
+<a asp-action="Details" asp-controller="Student" class="btn btn-primary" asp-route-id="@Model.Id">Details</a>
+<a asp-action="Create" asp-controller="Student" class="btn btn-primary" >Edit</a>
+<a asp-action="Create" asp-controller="Enrollment" class="btn btn-primary" >Enroll</a>
+<a asp-action="Index" asp-controller="Enrollment" class="btn btn-primary" >EnrollmentIndex</a>
+
+
+<a asp-action="Logout" asp-controller="User">Logout</a>

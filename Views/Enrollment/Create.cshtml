@@ -1,0 +1,346 @@
+@* 
+@model StudentRegisteration.ViewModels.EnrollmentCreateViewModel
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    
+    <div class="form-group">
+        <label asp-for="AcademicYear" class="control-label">Academic Year:</label>
+        <select asp-for="AcademicYear" class="form-control" asp-items="@(new SelectList(Model.AcademicYears))">
+            <option value="">-- Select Academic Year --</option>
+        </select>
+        <span asp-validation-for="AcademicYear" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Semester" class="control-label">Semester:</label>
+        <select asp-for="Semester" class="form-control" asp-items="@(new SelectList(Model.Semesters))">
+            <option value="">-- Select Semester --</option>
+        </select>
+        <span asp-validation-for="Semester" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label class="control-label">Select Course Name(s):</label>
+        <div id="courseNamesContainer">
+            @foreach (var courseName in Model.CourseNames)
+            {
+                <div class="form-check">
+                    <input class="form-check-input course-checkbox" type="checkbox" id="Course_@courseName" name="SelectedCourses" value="@courseName">
+                    <label class="form-check-label" for="Course_@courseName">@courseName</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Input fields for mark values -->
+    <div id="markFieldsContainer">
+        <!-- Mark input fields will be added dynamically based on selected courses -->
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Cost" class="control-label">Cost:</label>
+        <input asp-for="Cost" class="form-control" id="costInput" readonly />
+        <span asp-validation-for="Cost" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="PaymentType" class="control-label">Payment Type:</label>
+        <select asp-for="PaymentType" class="form-control">
+            <option value="Kbz Pay">Kbz Pay</option>
+            <option value="Cb Pay">Cb Pay</option>
+            <option value="Visa">Visa</option>
+            <option value="Master card">Master card</option>
+        </select>
+        <span asp-validation-for="PaymentType" class="text-danger"></span>
+    </div>
+    
+    <input type="hidden" asp-for="StudentDetailsId" />
+    <input type="hidden" asp-for="Completed" />
+    <input type="hidden" asp-for="ApprovalDate" />
+    <input type="hidden" asp-for="EnrollmentDate" />
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Function to populate course names checkboxes based on selected academic year and semester
+            function populateCourseNames(academicYear, semester) {
+                var courseNamesContainer = $('#courseNamesContainer');
+                
+                // Check if both academic year and semester are selected
+                if (academicYear && semester) {
+                    // If both are selected, make an AJAX call to get updated course names
+                    $.ajax({
+                        url: '/Enrollment/GetDistinctCourseNamesAsyncByAcademicYearAndSemester',
+                        type: 'GET',
+                        data: { academicYear: academicYear, semester: semester },
+                        success: function (courseNames) {
+                            courseNamesContainer.empty();
+                            $.each(courseNames, function (index, courseName) {
+                                var checkbox = $('<div class="form-check">' +
+                                    '<input class="form-check-input course-checkbox" type="checkbox" id="Course_' + courseName + '" name="SelectedCourses" value="' + courseName + '">' +
+                                    '<label class="form-check-label" for="Course_' + courseName + '">' + courseName + '</label>' +
+                                    '</div>');
+                                courseNamesContainer.append(checkbox);
+                            });
+                        }
+                    });
+                } else {
+                    // If not, display the original course names
+                    courseNamesContainer.empty();
+                    @foreach (var courseName in Model.CourseNames)
+                    {
+                        <text>
+                        var checkbox = $('<div class="form-check">' +
+                            '<input class="form-check-input course-checkbox" type="checkbox" id="Course_@courseName" name="SelectedCourses" value="@courseName">' +
+                            '<label class="form-check-label" for="Course_@courseName">@courseName</label>' +
+                            '</div>');
+                        courseNamesContainer.append(checkbox);
+                        </text>
+                    }
+                }
+            }
+
+            // Function to add mark input fields for selected courses
+            function addMarkFields(courseNames) {
+                var markFieldsContainer = $('#markFieldsContainer');
+                markFieldsContainer.empty(); // Clear previous fields
+                
+                // Iterate through selected courses
+                courseNames.forEach(function (courseName) {
+                    var markField = $('<div class="form-group">' +
+                        '<label class="control-label">Mark for ' + courseName + ':</label>' +
+                        '<input type="number" class="form-control" name="MarkValues[' + courseName + ']" required />' +
+                        '</div>');
+                    markFieldsContainer.append(markField);
+                });
+            }
+
+            // Populate course names initially
+            populateCourseNames('', '');
+
+            // Handle change event for AcademicYear dropdown
+            $('#AcademicYear').change(function () {
+                var academicYear = $(this).val();
+                var semester = $('#Semester').val();
+                populateCourseNames(academicYear, semester);
+            });
+
+            // Handle change event for Semester dropdown
+            $('#Semester').change(function () {
+                var academicYear = $('#AcademicYear').val();
+                var semester = $(this).val();
+                populateCourseNames(academicYear, semester);
+            });
+
+            // Handle change event for course checkboxes
+            $(document).on('change', '.course-checkbox', function () {
+                var selectedCourses = $('.course-checkbox:checked').map(function () {
+                    return $(this).val();
+                }).get();
+                addMarkFields(selectedCourses);
+            });
+
+            $('#AcademicYear').change(function () {
+                var academicYear = $(this).val();
+                var cost = 0;
+
+                switch (academicYear) {
+                    case '1st Year':
+                        cost = 10000;
+                        break;
+                    case '2nd Year':
+                        cost = 20000;
+                        break;
+                    case '3rd Year':
+                        cost = 30000;
+                        break;
+                    default:
+                        cost = 0;
+                        break;
+                }
+
+                $('#costInput').val(cost);
+            })
+        });
+    </script>
+}
+                *@
+
+
+@model StudentRegisteration.ViewModels.EnrollmentCreateViewModel
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    
+    <div class="form-group">
+        <label asp-for="AcademicYear" class="control-label">Academic Year:</label>
+        <select asp-for="AcademicYear" class="form-control" id="AcademicYear" asp-items="@(new SelectList(Model.AcademicYears))">
+            <option value="">-- Select Academic Year --</option>
+        </select>
+        <span asp-validation-for="AcademicYear" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Semester" class="control-label">Semester:</label>
+        <select asp-for="Semester" class="form-control" id="Semester" asp-items="@(new SelectList(Model.Semesters))">
+            <option value="">-- Select Semester --</option>
+        </select>
+        <span asp-validation-for="Semester" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label class="control-label">Select Course Name(s):</label>
+        <div id="courseNamesContainer">
+            @foreach (var courseName in Model.CourseNames)
+            {
+                <div class="form-check">
+                    <input class="form-check-input course-checkbox" type="checkbox" id="Course_@courseName" name="SelectedCourses" value="@courseName">
+                    <label class="form-check-label" for="Course_@courseName">@courseName</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Input fields for mark values -->
+    <div id="markFieldsContainer">
+        <!-- Mark input fields will be added dynamically based on selected courses -->
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Cost" class="control-label">Cost:</label>
+        <input asp-for="Cost" class="form-control" id="costInput" readonly />
+        <span asp-validation-for="Cost" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="PaymentType" class="control-label">Payment Type:</label>
+        <select asp-for="PaymentType" class="form-control">
+            <option value="Kbz Pay">Kbz Pay</option>
+            <option value="Cb Pay">Cb Pay</option>
+            <option value="Visa">Visa</option>
+            <option value="Master card">Master card</option>
+        </select>
+        <span asp-validation-for="PaymentType" class="text-danger"></span>
+    </div>
+    
+    <input type="hidden" asp-for="StudentDetailsId" />
+    <input type="hidden" asp-for="Completed" />
+    <input type="hidden" asp-for="ApprovalDate" />
+    <input type="hidden" asp-for="EnrollmentDate" />
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Function to populate course names checkboxes based on selected academic year and semester
+            function populateCourseNames(academicYear, semester) {
+                var courseNamesContainer = $('#courseNamesContainer');
+                
+                // Check if both academic year and semester are selected
+                if (academicYear && semester) {
+                    // If both are selected, make an AJAX call to get updated course names
+                    $.ajax({
+                        url: '/Enrollment/GetDistinctCourseNamesAsyncByAcademicYearAndSemester',
+                        type: 'GET',
+                        data: { academicYear: academicYear, semester: semester },
+                        success: function (courseNames) {
+                            courseNamesContainer.empty();
+                            $.each(courseNames, function (index, courseName) {
+                                var checkbox = $('<div class="form-check">' +
+                                    '<input class="form-check-input course-checkbox" type="checkbox" id="Course_' + courseName + '" name="SelectedCourses" value="' + courseName + '">' +
+                                    '<label class="form-check-label" for="Course_' + courseName + '">' + courseName + '</label>' +
+                                    '</div>');
+                                courseNamesContainer.append(checkbox);
+                            });
+                        }
+                    });
+                } else {
+                    // If not, display the original course names
+                    courseNamesContainer.empty();
+                    @foreach (var courseName in Model.CourseNames)
+                    {
+                        <text>
+                        var checkbox = $('<div class="form-check">' +
+                            '<input class="form-check-input course-checkbox" type="checkbox" id="Course_@courseName" name="SelectedCourses" value="@courseName">' +
+                            '<label class="form-check-label" for="Course_@courseName">@courseName</label>' +
+                            '</div>');
+                        courseNamesContainer.append(checkbox);
+                        </text>
+                    }
+                }
+            }
+
+            // Function to add or remove mark input fields based on selected courses
+            function updateMarkFields() {
+                var markFieldsContainer = $('#markFieldsContainer');
+                markFieldsContainer.empty(); // Clear previous fields
+                
+                // Get selected courses
+                var selectedCourses = $('.course-checkbox:checked').map(function () {
+                    return $(this).val();
+                }).get();
+                
+                // Add mark input fields for selected courses
+                selectedCourses.forEach(function (courseName) {
+                    var markField = $('<div class="form-group">' +
+                        '<label class="control-label">Mark for ' + courseName + ':</label>' +
+                        '<input type="number" class="form-control" name="MarkValues[' + courseName + ']" />' +
+                        '</div>');
+                    markFieldsContainer.append(markField);
+                });
+            }
+
+             $('#AcademicYear').change(function () {
+                var academicYear = $(this).val();
+                var cost = 0;
+
+                switch (academicYear) {
+                    case '1st Year':
+                        cost = 10000;
+                        break;
+                    case '2nd Year':
+                        cost = 20000;
+                        break;
+                    case '3rd Year':
+                        cost = 30000;
+                        break;
+                    default:
+                        cost = 0;
+                        break;
+                }
+
+                $('#costInput').val(cost);
+            })
+
+            // Populate course names initially
+            populateCourseNames('', '');
+
+            // Handle change event for AcademicYear dropdown
+            $('#AcademicYear').change(function () {
+                var academicYear = $(this).val();
+                var semester = $('#Semester').val();
+                populateCourseNames(academicYear, semester);
+                updateMarkFields();
+            });
+
+            // Handle change event for Semester dropdown
+            $('#Semester').change(function () {
+                var academicYear = $('#AcademicYear').val();
+                var semester = $(this).val();
+                populateCourseNames(academicYear, semester);
+                updateMarkFields();
+            });
+
+            // Handle change event for course checkboxes
+            $(document).on('change', '.course-checkbox', function () {
+                updateMarkFields();
+            });
+        });
+    </script>
+}

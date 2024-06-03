@@ -1,0 +1,35 @@
+@model StudentRegisteration.ViewModels.CourseOfferingCreateViewModel
+
+<h1>Course List</h1>
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard </a>
+
+
+<a class="btn btn-primary" asp-action="Create">Create Course</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Academic Year</th>
+            <th>Semester</th>
+            <th>Course Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var data in Model.CombinedData)
+        {
+            <tr>
+                <td>@data.AcademicYear</td>
+                <td>@data.Semester</td>
+                <td>@data.CourseName</td>
+                <td>
+                    <a class="btn btn-info" asp-action="Edit" asp-route-id="@data.Id">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@data.Id" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    </form>                 
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

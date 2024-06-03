@@ -1,0 +1,207 @@
+@model StudentRegisteration.ViewModels.EnrollmentListViewModel
+    
+<h1>Student and Enrollment List</h1>
+
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard </a>
+<script>
+  window.onload = function() {
+    var courseSelect = document.getElementById("courseName");
+    courseSelect.selectedIndex = 0; // Set the selected index to 0 ("All Courses")
+  }
+</script>
+<form method="get" asp-action="StudentAndEnrollmentList" id="filterForm" class=" mt-3 mb-3 gap-3">
+    <div class="d-flex gap-3 mt-3 mb-3 ">
+        <div class=" col-6 ">
+            <label class="form-label" for="studentName">Student Name:</label>
+            <input class="form-control" type="text" id="studentName" name="studentName" value="@Model.FilterOptions.StudentName" placeholder="Enter Student Name" onchange="submitForm()">
+        </div>
+
+        <div class=" col-6 ">
+            <label class="form-label" for="rollNumber">Roll Number:</label>
+            <input class="form-control" type="text" id="rollNumber" name="rollNumber" value="@Model.FilterOptions.RollNumber" placeholder="Enter Roll Number" onchange="submitForm()">
+        </div>
+    </div>
+    <div class="d-flex gap-3">
+        <div class="col-6">
+            <div class="mb-3">
+                <label class="form-label"  for="courseName" >Course Name:</label>
+                <select class="form-select" id="courseName" name="courseName" onchange="submitForm()">
+                    <option value="" selected>All Courses</option>
+                    @foreach (var course in Model.FilterOptions.CourseNames)
+                    {
+                        <option value="@course" selected="@course == Model.FilterOptions.CourseName">@course</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="academicYear">Academic Year:</label>
+                <select class="form-select" id="academicYear" name="academicYear" onchange="submitForm()">
+                    <option value="">Select Academic Year</option>
+                    <option value="1st Year" selected="@("1st Year" == Model.FilterOptions.AcademicYear)">1st Year</option>
+                    <option value="2nd Year" selected="@("2nd Year" == Model.FilterOptions.AcademicYear)">2nd Year</option>
+                    <option value="3rd Year" selected="@("3rd Year" == Model.FilterOptions.AcademicYear)">3rd Year</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="semester">Semester:</label>
+                <select class="form-select" id="semester" name="semester" onchange="submitForm()">
+                    <option value="">Select Semester</option>
+                    <option value="FirstSemester" selected="@("First Semester" == Model.FilterOptions.Semester)">First Semester</option>
+                    <option value="SecondSemester" selected="@("Second Semester" == Model.FilterOptions.Semester)">Second Semester</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+        </div>
+        <div class="col-6 ">
+            <div class="mb-3">
+                <label class="form-label" for="status">Status:</label>
+                <select class="form-select" id="status" name="status" onchange="submitForm()">
+                    <option value="">Select Status</option>
+                    <option value="Pending" selected="@("Pending" == Model.FilterOptions.Status)">Pending</option>
+                    <option value="Approved" selected="@("Approved" == Model.FilterOptions.Status)">Approved</option>
+                    <option value="Rejected" selected="@("Rejected" == Model.FilterOptions.Status)">Rejected</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="isPassed">Is Passed:</label>
+                <select class="form-select" id="isPassed" name="isPassed" onchange="submitForm()">
+                    <option value="">Select Passed Status</option>
+                    @if (Model.FilterOptions.IsPassed.HasValue)
+                    {
+                        <option value="true" selected="@true == Model.FilterOptions.IsPassed">Passed</option>
+                        <option value="false" selected="@false == Model.FilterOptions.IsPassed">Not Passed</option>
+                    }
+                    else
+                    {
+                        <option value="true">Passed</option>
+                        <option value="false">Not Passed</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="submit" class="mb-4"></label>
+                <button class="btn btn-success w-100 " type="submit">Filter</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (!Model.enrollmentCourseViewModels.Any())
+{
+    <p>No records found.</p>
+}
+else
+{
+    int pageSize = 5;
+    var totalPages = (int)Math.Ceiling((double)Model.enrollmentCourseViewModels.FirstOrDefault()?.TotalCount / pageSize);
+    var currentPage = Model.enrollmentCourseViewModels.FirstOrDefault()?.Page ?? 1;
+
+    if (totalPages > 0)
+    {
+        <div class="pagination">
+            <a class="btn btn-primary @(currentPage == 1 ? "disabled" : "")" href="@Url.Action("StudentAndEnrollmentList", new { page = 1, pageSize = Model.PageSize, courseName = Model.FilterOptions.CourseName, academicYear = Model.FilterOptions.AcademicYear, semester = Model.FilterOptions.Semester, status = Model.FilterOptions.Status, isPassed = Model.FilterOptions.IsPassed, studentName = Model.FilterOptions.StudentName, rollNumber = Model.FilterOptions.RollNumber })">First</a>
+            <a class="btn btn-primary @(currentPage == 1 ? "disabled" : "")" href="@Url.Action("StudentAndEnrollmentList", new { page = currentPage - 1, pageSize = Model.PageSize, courseName = Model.FilterOptions.CourseName, academicYear = Model.FilterOptions.AcademicYear, semester = Model.FilterOptions.Semester, status = Model.FilterOptions.Status, isPassed = Model.FilterOptions.IsPassed, studentName = Model.FilterOptions.StudentName, rollNumber = Model.FilterOptions.RollNumber })">Previous</a>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <a class="btn btn-outline-success @(i == currentPage ? "active" : "")" href="@Url.Action("StudentAndEnrollmentList", new { page = i, pageSize = Model.PageSize, courseName = Model.FilterOptions.CourseName, academicYear = Model.FilterOptions.AcademicYear, semester = Model.FilterOptions.Semester, status = Model.FilterOptions.Status, isPassed = Model.FilterOptions.IsPassed, studentName = Model.FilterOptions.StudentName, rollNumber = Model.FilterOptions.RollNumber })">@i</a>
+            }
+
+            <a class="btn btn-success @(currentPage == totalPages ? "disabled" : "" )" href="@Url.Action("StudentAndEnrollmentList", new { page = currentPage + 1, pageSize = Model.PageSize, courseName = Model.FilterOptions.CourseName, academicYear = Model.FilterOptions.AcademicYear, semester = Model.FilterOptions.Semester, status = Model.FilterOptions.Status, isPassed = Model.FilterOptions.IsPassed, studentName = Model.FilterOptions.StudentName, rollNumber = Model.FilterOptions.RollNumber })">Next</a>
+            <a class="btn btn-success @(currentPage == totalPages ? "disabled" : "")" href="@Url.Action("StudentAndEnrollmentList", new { page = totalPages, pageSize = Model.PageSize, courseName = Model.FilterOptions.CourseName, academicYear = Model.FilterOptions.AcademicYear, semester = Model.FilterOptions.Semester, status = Model.FilterOptions.Status, isPassed = Model.FilterOptions.IsPassed, studentName = Model.FilterOptions.StudentName, rollNumber = Model.FilterOptions.RollNumber })">Last</a>
+        </div>
+    }
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>enrollment-id</th>
+                <th>Roll Number</th>
+                <th>Courses</th>
+                <th>Academic Year</th>
+                <th>Semester</th>
+                <th>IsPassed</th>
+            
+                <th>Status</th>
+                <th>Action</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var group in Model.enrollmentCourseViewModels.GroupBy(item => item.EnrollmentId))
+            {
+                var firstItem = group.First();
+                <tr>
+                    <td>@firstItem.StudentName</td>
+                    <td>@firstItem.EnrollmentId</td>
+                    <td>@firstItem.RollNumber</td>
+                    <td>
+                        <ul id="courseList_@firstItem.EnrollmentId">
+                            @foreach (var courseName in group.SelectMany(item => item.CourseName.Split(",").Distinct()))
+                            {
+                                <li class="text-primary fw-bold">@courseName</li>
+                            }
+                        </ul>
+                    </td>
+                    <td>@firstItem.AcademicYear</td>
+                    <td>@firstItem.Semester</td>
+                    <td>@firstItem.IsPassed</td>
+                    
+                    <td>
+                        <select name="Status" id="status_@firstItem.EnrollmentId">
+                            <option value="@firstItem.Status">@firstItem.Status</option>
+                            @foreach (var availableStatus in firstItem.AvailableStatuses.Where(s => s != firstItem.Status))
+                            {
+                                <option value="@availableStatus">@availableStatus</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-update-status" data-enrollment-id="@firstItem.EnrollmentId">Update</button>
+                    </td>
+                    <td>
+                        <a class="btn btn-outline-primary" asp-area="" asp-controller="Enrollment" asp-action="Details" asp-route-enrollmentId="@firstItem.EnrollmentId">go to Details </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+          
+            // Update selected status based on current value
+            $("select[name='Status']").change(function () {
+                var selectedStatus = $(this).val();
+                $(this).siblings("select").val("").prop("disabled", selectedStatus !== "");
+            });
+
+            // Update status on button click
+            $(".btn-update-status").click(function () {
+                var enrollmentId = $(this).data('enrollment-id');
+                var status = $("#status_" + enrollmentId).val();
+                updateStatus(enrollmentId, status);
+            });
+
+            function updateStatus(enrollmentId, status) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Enrollment/UpdateEnrollmentStatus",
+                    data: { enrollmentId: enrollmentId, status: status },
+                    success: function () {
+                        alert("Status updated successfully.");
+                        // Optionally, reload the table or update the row dynamically
+                    },
+                    error: function () {
+                        alert("Failed to update status.");
+                    }
+                });
+            }
+        });
+    </script>
+}

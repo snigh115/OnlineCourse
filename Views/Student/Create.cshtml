@@ -1,0 +1,277 @@
+
+@model StudentRegisteration.ViewModels.StudentDetailsCreateViewModel
+
+<h1>Create Student</h1>
+
+<form id="studentForm" method="post" enctype="multipart/form-data">
+    <!-- Step 1: Student Information -->
+    <div id="step1">
+        <h2>Step 1: Student Information</h2>
+        <div class="form-group">
+            <label asp-for="Name">Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="PhoneNumber">Phone Number</label>
+            <input asp-for="PhoneNumber" class="form-control" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NrcNumber">NRC Number</label>
+            <input asp-for="NrcNumber" id="nrcNumberInput" class="form-control" />
+            <span asp-validation-for="NrcNumber" class="text-danger"></span>
+        </div>
+
+        <!-- Display existing images and provide option to upload new images -->
+        <div class="row">
+            <div class="col-sm-2">
+                <strong>NRC Front Pic:</strong>
+            </div>
+            <div class="col-sm-10">
+                <img id="nrcFrontPicPreview" src="@Model.NrcFrontPicPath" alt="NRC Front Pic" style="max-width: 200px; max-height: 200px;" />
+                <!-- Allow user to upload new NRC Front Pic -->
+                <input type="file" id="nrcFrontPicInput" name="nrcFrontPic" accept="image/*" class="form-control" />
+                <span asp-validation-for="NrcFrontPicPath" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2">
+                <strong>NRC Back Pic:</strong>
+            </div>
+            <div class="col-sm-10">
+                <img id="nrcBackPicPreview" src="@Model.NrcBackPicPath" alt="NRC Back Pic" style="max-width: 200px; max-height: 200px;" />
+                <!-- Allow user to upload new NRC Back Pic -->
+                <input type="file" id="nrcBackPicInput" name="nrcBackPic" accept="image/*" class="form-control" />
+                <span asp-validation-for="NrcBackPicPath" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2">
+                <strong>Profile Pic:</strong>
+            </div>
+            <div class="col-sm-10">
+                <img id="profilePicPreview" src="@Model.ProfilePicPath" alt="Profile Pic" style="max-width: 200px; max-height: 200px;" />
+                <!-- Allow user to upload new Profile Pic -->
+                <input type="file" id="profilePicInput" name="profilePic" accept="image/*" class="form-control" />
+                <span asp-validation-for="ProfilePicPath" class="text-danger"></span>
+            </div>
+        </div>
+
+        <button type="button" id="nextStepBtn" class="btn btn-primary">Next</button>
+    </div>
+
+    <!-- Step 2: Address Information -->
+<div id="step2" style="display: none;">
+    <h2>Step 2: Address Information</h2>
+    <div class="form-group">
+        <label asp-for="State">State</label>
+        <select asp-for="State" class="form-control" id="State">
+            <option value="">Select State</option>
+            @foreach (var state in Model.States)
+            {
+                <option value="@state">@state</option>
+            }
+        </select>
+        <span asp-validation-for="State" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="City">City</label>
+        <select asp-for="City" class="form-control" id="City">
+            <option value="">Select City</option>
+        </select>
+        <span asp-validation-for="City" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Town">Town</label>
+        <select asp-for="Town" class="form-control" id="Town">
+            <option value="">Select Town</option>
+        </select>
+        <span asp-validation-for="Town" class="text-danger"></span>
+    </div>
+</div>
+
+<!-- Hidden fields for address details -->
+<input type="hidden" id="selectedState" name="SelectedState" value="@Model.State" />
+<input type="hidden" id="selectedCity" name="SelectedCity" value="@Model.City" />
+<input type="hidden" id="selectedTown" name="SelectedTown" value="@Model.Town" />
+
+<button  type="button" id="prevStepBtn" class="btn btn-secondary">Previous</button>
+
+<!-- Submit button -->
+<button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Submit</button>
+
+</form>
+
+@section Scripts {
+<script>
+    $(document).ready(function () {
+        // Step navigation
+        $('#nextStepBtn').click(function () {
+            $('#step1').hide();
+            $('#step2').show();
+            $('#submitBtn').show();
+            $('#prevStepBtn').show();
+        });
+
+        $('#prevStepBtn').click(function () {
+            $('#step2').hide();
+            $('#step1').show();
+            $('#submitBtn').hide();
+            $('#prevStepBtn').hide();
+        });
+
+        // Function to populate address fields if data is present
+        function populateAddressFields() {
+            var selectedState = $('#selectedState').val();
+            var selectedCity = $('#selectedCity').val();
+            var selectedTown = $('#selectedTown').val();
+
+            if (selectedState) {
+                $('#State').val(selectedState);
+                populateCities(selectedState, selectedCity);
+            }
+
+            if (selectedCity) {
+                $('#City').val(selectedCity);
+                populateTowns(selectedCity, selectedTown);
+
+                // Set the selected town directly in the dropdown
+                $('#Town option').filter(function() {
+                    return $(this).val() == selectedTown;
+                }).prop('selected', true);
+            }
+
+            @* if (selectedTown) {
+                $('#Town').val(selectedTown);
+            } *@
+        }
+
+        // Populate address fields on page load
+        populateAddressFields();
+
+        // Function to populate cities based on selected state
+        function populateCities(selectedState, selectedCity) {
+            $.ajax({
+                url: '/Student/GetCitiesByState',
+                type: 'GET',
+                data: { state: selectedState },
+                success: function (cities) {
+                    var cityDropdown = $('#City');
+                    cityDropdown.empty();
+                    cityDropdown.append($('<option></option>').attr('value', '').text('Select City'));
+                    $.each(cities, function (index, city) {
+                        cityDropdown.append($('<option></option>').attr('value', city).text(city));
+                    });
+                    if (selectedCity) {
+                        $('#City').val(selectedCity);
+                        populateTowns(selectedCity, selectedTown);
+                    }
+                }
+            });
+        }
+
+                  
+function populateTowns(selectedCity, selectedTown) {
+    console.log("Selected Town:", selectedTown);
+    
+    $.ajax({
+        url: '/Student/GetTownByCity',
+        type: 'GET',
+        data: { city: selectedCity },
+        success: function (towns) {
+            var townDropdown = $('#Town');
+            townDropdown.empty(); // Clear previous options
+            
+            // Add placeholder option
+            townDropdown.append($('<option></option>').attr('value', '').text('Select Town'));
+            
+            // Add town options
+            $.each(towns, function (index, town) {
+                console.log("Town:", town);
+                
+                var option = $('<option></option>').attr('value', town).text(town);
+                
+                // Set selected attribute if the town matches selectedTown
+                if (selectedTown !== undefined && town === selectedTown) {
+                    console.log("Selected Town:", selectedTown);
+                    console.log(" Town:", town);
+                    option.prop('selected', true); // Set selected attribute
+                }                
+                townDropdown.append(option);
+            });
+        }
+    });
+}
+        // Handle change event for State dropdown
+        $('#State').change(function () {
+            var selectedState = $(this).val();
+            populateCities(selectedState);
+        });
+
+        // Handle change event for City dropdown
+        $('#City').change(function () {
+            var selectedCity = $(this).val();
+            populateTowns(selectedCity);
+        });
+
+        // Function to display image preview
+        function displayImagePreview(input, imgElement) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $(imgElement).attr('src', e.target.result);
+                    $(imgElement).show();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Handle change event for NRC Front Pic input
+        $('#nrcFrontPicInput').change(function () {
+            displayImagePreview(this, '#nrcFrontPicPreview');
+        });
+
+        // Handle change event for NRC Back Pic input
+        $('#nrcBackPicInput').change(function () {
+            displayImagePreview(this, '#nrcBackPicPreview');
+        });
+
+        // Handle change event for Profile Pic input
+        $('#profilePicInput').change(function () {
+            displayImagePreview(this, '#profilePicPreview');
+        });
+
+
+        function validateNrcNumber(nrcNumber) {
+            // Define the regex pattern for the NRC number format
+            var pattern = /^([0-9]{1,2})\/([A-Z][a-z]|[A-Z][a-z][a-z])([A-Z][a-z]|[A-Z][a-z][a-z])([A-Z][a-z]|[A-Z][a-z][a-z])\([N,P,E]\)[0-9]{6}$/;
+            return pattern.test(nrcNumber);
+        }
+
+        // Attach change event listener to NRC Number input field
+        $('#nrcNumberInput').change(function () {
+            var nrcNumber = $(this).val();
+            var isValid = validateNrcNumber(nrcNumber);
+            if (!isValid) {
+                // Display error message or visual cue for invalid NRC Number
+                $(this).addClass('is-invalid');
+                $(this).next('.text-danger').text('Invalid NRC Number format.');
+            } else {
+                // Remove error message or visual cue for valid NRC Number
+                $(this).removeClass('is-invalid');
+                $(this).addClass('is-valid');
+                $(this).next('.text-danger').text('');
+            }
+        });
+    });
+</script>
+}
+
+

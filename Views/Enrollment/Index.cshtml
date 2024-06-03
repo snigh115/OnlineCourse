@@ -1,0 +1,215 @@
+@* 
+@model List<StudentRegisteration.ViewModels.EnrollmentCourseViewModel>
+
+@{
+    var academicYearOrder = new Dictionary<string, int>
+    {
+        { "1st Year", 1 },
+        { "2nd Year", 2 },
+        { "3rd Year", 3 },
+        // Add more years if needed
+    };
+
+    var sortedModel = Model.OrderBy(ec => academicYearOrder.ContainsKey(ec.AcademicYear) ? academicYearOrder[ec.AcademicYear] : int.MaxValue).ToList();
+}
+
+<h1 class="mt-4 mb-4">Enrollment Index</h1>
+
+<a asp-action="Dashboard" asp-controller="Student" class="btn btn-primary mb-4" asp-route-id="@Model.FirstOrDefault()?.StudentDetailsId">Dashboard</a>
+
+@if (sortedModel.Count > 0)
+{
+    <div class="row">
+        @foreach (var item in sortedModel.GroupBy(ec => new { ec.EnrollmentId, ec.AcademicYear, ec.Semester }))
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <div class="fw-bold fs-2">
+                            @item.FirstOrDefault().StudentName
+                        </div>
+                        Enrollment ID: @item.Key.EnrollmentId
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Academic Year: @item.Key.AcademicYear</h5>
+                        <h5 class="card-title">Semester: @item.Key.Semester</h5>
+                        <h5 class="card-title">Roll Number: @item.FirstOrDefault().RollNumber</h5>
+                        <h5 class="card-title">Course Names:</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var course in item.Select(ec => ec.CourseName).Distinct())
+                            {
+                                <li>@course</li>
+                            }
+                        </ul>
+                        <p class="card-text">Is Completed: @item.FirstOrDefault().IsCompleted</p>
+                      
+                        <p class="card-text">Status: <span class="@(item.FirstOrDefault().Status == "Pending" ? "text-warning" : item.FirstOrDefault().Status == "Approved" ? "text-success" : "")">@item.FirstOrDefault().Status</span></p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No enrollments found.</p>
+} *@
+
+
+@model List<StudentRegisteration.ViewModels.EnrollmentCourseViewModel>
+
+@{
+    var academicYearOrder = new Dictionary<string, int>
+    {
+        { "1st Year", 1 },
+        { "2nd Year", 2 },
+        { "3rd Year", 3 },
+        // Add more years if needed
+    };
+
+    var sortedModel = Model.OrderBy(ec => academicYearOrder.ContainsKey(ec.AcademicYear) ? academicYearOrder[ec.AcademicYear] : int.MaxValue).ToList();
+}
+
+<h1 class="mt-4 mb-4">Enrollment Index</h1>
+
+<a asp-action="Dashboard" asp-controller="Student" class="btn btn-primary mb-4" asp-route-id="@Model.FirstOrDefault()?.StudentDetailsId">Dashboard</a>
+
+@if (sortedModel.Count > 0)
+{
+    <div class="row">
+        @foreach (var item in sortedModel.GroupBy(ec => new { ec.EnrollmentId, ec.AcademicYear, ec.Semester }))
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <div class="fw-bold fs-2">
+                            @item.FirstOrDefault().StudentName
+                        </div>
+                        Enrollment ID: @item.Key.EnrollmentId
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Academic Year: @item.Key.AcademicYear</h5>
+                        <h5 class="card-title">Semester: @item.Key.Semester</h5>
+                        <h5 class="card-title">Roll Number: @item.FirstOrDefault().RollNumber</h5>
+                        <h5 class="card-title">Course Details:</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var course in item)
+                            {
+                               @* <li class="list-group-item d-flex justify-content-between align-items-center rounded">
+                                    <div class="flex-grow-1">@course.CourseName</div>
+                                    <div class="mx-auto" >Mark: @course.MarkValue</div>
+                                    <div class="text-right">@course.IsPassed</div>
+                                </li>
+                             *@
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center rounded">
+                                    <div class="flex-grow-1">@course.CourseName</div>
+                                    
+                                    @if (course.IsPassed ?? false) 
+                                    {
+                                        <div class="mx-auto text-success font-monospace">Mark: @course.MarkValue</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="mx-auto text-danger font-monospace">Mark: @course.MarkValue</div>
+                                    }
+
+                                    @* <div class="text-right">@course.IsPassed</div> *@
+                                </li>
+                            }
+                        </ul>
+                        @* <p class="card-text">Is Completed: @item.FirstOrDefault().IsCompleted</p> *@
+                      
+                    </div>
+                    <div class="card-footer">
+                        <div class="me-auto font-monospace ">
+                           <p class="card-text">Status: <span class="@(item.FirstOrDefault().Status == "Pending" ? "text-warning fw-light" : item.FirstOrDefault().Status == "Approved" ? "text-success" : item.FirstOrDefault().Status == "Rejected" ? "text-danger" : "")">@item.FirstOrDefault().Status</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No enrollments found.</p>
+}
+
+
+@* 
+@model List<StudentRegisteration.ViewModels.EnrollmentCourseViewModel>
+
+@{
+    var academicYearOrder = new Dictionary<string, int>
+    {
+        { "1st Year", 1 },
+        { "2nd Year", 2 },
+        { "3rd Year", 3 },
+        // Add more years if needed
+    };
+
+    var sortedModel = Model.OrderBy(ec => academicYearOrder.ContainsKey(ec.AcademicYear) ? academicYearOrder[ec.AcademicYear] : int.MaxValue).ToList();
+}
+
+<h1 class="mt-4 mb-4">Enrollment Index</h1>
+
+<a asp-action="Dashboard" asp-controller="Student" class="btn btn-primary mb-4" asp-route-id="@Model.FirstOrDefault()?.StudentDetailsId">Dashboard</a>
+
+
+   
+<h1>Student Dashboard</h1>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+    <th>EnrollmentId</th>
+      <th>Student Name</th>
+
+      <th>Roll Number</th>
+      <th>Course Name</th>
+      <th>Academic Year</th>
+      <th>Semester</th>
+      <th>Status</th>
+      <th>Mark</th>
+      <th>Passed</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var enrollmentCourse in Model)
+    {
+      <tr>
+        <td>@enrollmentCourse.EnrollmentId</td>
+        <td>@enrollmentCourse.StudentName</td>
+        <td>@enrollmentCourse.RollNumber</td>
+        <td>@enrollmentCourse.CourseName</td>
+        <td>@enrollmentCourse.AcademicYear</td>
+        <td>@enrollmentCourse.Semester</td>
+        <td>@enrollmentCourse.Status</td>
+        <td>
+          @if (enrollmentCourse.MarkValue.HasValue)
+          {
+              @enrollmentCourse.MarkValue.Value
+          }
+          else
+          {
+              
+          }
+        </td>
+        <td>
+          @if (enrollmentCourse.IsPassed.HasValue)
+          {
+              @enrollmentCourse.IsPassed
+          }
+          else
+          {
+              
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+ *@
+
+

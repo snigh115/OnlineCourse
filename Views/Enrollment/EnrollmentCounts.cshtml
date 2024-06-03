@@ -1,0 +1,30 @@
+@model StudentRegisteration.ViewModels.EnrollmentTotalCountsViewModel
+
+<h1>Enrollment Counts</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Academic Year</th>
+            <th>Enrollment Count</th>
+            <th>Student Counts</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.EnrollmentCountViewModel)
+        {
+            <tr>
+                <td>@item.AcademicYear</td>
+                <td>@item.EnrollmentCount Enrollments</td>
+                <td>@item.UniqueEnrollmentCount Students</td>
+            </tr>
+        }
+    </tbody>
+</table> 
+
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <p>Total Counts:</p> <p class="me-5">@Model.TotalCount Students</p>
+</div>
+
+ 
+<a class="btn btn-outline-secondary" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>

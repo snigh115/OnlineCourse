@@ -1,0 +1,46 @@
+
+@model StudentRegisteration.ViewModels.MonthlyReportViewModel
+
+<h2>Monthly Payment Sheet</h2>
+
+<form method="get" asp-action="MonthlyPaymentSheet">
+    <div class="col-6 ">
+        <label class="mb-2" for="month">Month:</label>
+        <select class="form-select col-6" id="month" name="month" asp-for="SelectedMonth" asp-items="@(new SelectList(Model.AvailableMonths, Model.SelectedMonth))">
+        </select>
+        <label class="mb-2" for="year">Year:</label>
+        <select class="form-select col-6" id="year" name="year" asp-for="SelectedYear" asp-items="@(new SelectList(Model.AvailableYears, Model.SelectedYear))">
+        </select>
+        <button class="btn btn-success mt-2" type="submit">Filter</button>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Roll Number</th>
+            <th>Student Name</th>
+            <th>Enrollment Date</th>
+            <th>PaymentType</th>
+            <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var enrollment in Model.Enrollments)
+        {
+            <tr>
+                <td>@enrollment.RollNumber</td>
+                <td>@enrollment.StudentDetails?.Name</td>
+                <td>@enrollment.EnrollmentDate.ToString("yyyy-MM-dd")</td>
+                <td>@enrollment.PaymentType</td>
+                <td>@enrollment.Cost.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    <h3>Total Cost: @Model.TotalCost.ToString("C") ks</h3>
+</div>
+
+@* .ToString("C") is use for to show dollar sign and 2 decimal places *@
